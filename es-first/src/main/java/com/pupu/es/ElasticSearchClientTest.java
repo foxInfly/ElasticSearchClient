@@ -5,6 +5,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -114,9 +115,32 @@ public class ElasticSearchClientTest {
         article.setContent("4444444444");
 
         ObjectMapper objectMapper = new ObjectMapper();
-        
+        String jsonDocument = objectMapper.writeValueAsString(article);
+        System.out.println(jsonDocument);
+
         //获取管理员，做索引库的操作，然后指定要创建的索引库的名称,设置后，调用get()执行
-        client.admin().indices().prepareCreate("inex_hello").get();
+        client.prepareIndex("inex_hello","article","4").setSource(jsonDocument, XContentType.JSON).get();
+        client.close();
+    }
+
+
+    @Test
+    public void testAddDocument3() throws Exception {
+        for (int i = 5; i < 100; i++) {
+            Article article = new Article();
+            article.setId((long) i);
+            article.setTitle("做索引库的操作"+i);
+            article.setContent("然后指定要创建的索引库的名称"+i);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonDocument = objectMapper.writeValueAsString(article);
+            System.out.println(jsonDocument);
+
+            //获取管理员，做索引库的操作，然后指定要创建的索引库的名称,设置后，调用get()执行
+            client.prepareIndex("inex_hello","article",i+"")
+                    .setSource(jsonDocument, XContentType.JSON).get();
+        }
+
         client.close();
     }
 }
